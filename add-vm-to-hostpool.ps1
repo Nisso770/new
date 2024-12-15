@@ -8,7 +8,7 @@ $location = "Israel Central"
 $hostpoolname = "test__support"
 $vnetName = "pavd-test-vnet"
 $subnetName = "default"
-$vmsize = "Standard_D2_v3" 
+$vmsize = "D2lds_v5"
 $subnetId = "/subscriptions/31076e3c-fc5e-4f0b-be52-0eb744e89036/resourceGroups/test_support/providers/Microsoft.Network/virtualNetworks/pavd-test-vnet/subnets/default"
 
 # הגדרות ה-Image
@@ -18,6 +18,7 @@ $imageReference = @{
     Sku       = "win11-22h2-ent"
     Version   = "latest"
 }
+
 Write-Output "Image parameters loaded: $($imageReference | Out-String)"
 Write-Output "Parameters loaded:
 - Resource Group: $resourceGroupname
@@ -45,38 +46,46 @@ try {
     throw $_
 }
 
-# לולאה ליצירת 5 מכונות והוספתן ל-Host Pool
-1..5 | ForEach-Object {
-    $vmname = "hostpoolvm-$($startIndex++)-$(Get-Date -Format 'yyyyMMddHHmmss')"
-    Write-Output "Starting creation of VM: $vmname"
+# יצירת שם ה-VM
+$vmname = "hostpoolvm-$($startIndex)-$(Get-Date -Format 'yyMMddHHmmss')"  
+Write-Output "Starting creation of VM: $vmname"
 
-    try {
-        # יצירת NIC (כרטיס רשת)
-        Write-Output "Creating Network Interface for VM $vmname..."
-        $nic = New-AzNetworkInterface -Name "$vmname-NIC" -ResourceGroupName $resourceGroupname -Location $location -SubnetId $subnetId
+try {
+    # יצירת NIC
+    Write-Output "Creating Network Interface for VM $vmname..."
+    $nic = New-AzNetworkInterface -Name "$vmname-NIC" -ResourceGroupName $resourceGroupname -Location $location -SubnetId $subnetId
+    # NIC זה **לא מקבל Public IP**
 
-        # יצירת ה-VM
-        Write-Output "Creating VM $vmname in Resource Group: $resourceGroupname - Location: $location"
-        $vmConfig = New-AzVMConfig -VMName $vmname -VMSize $vmsize
-        $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Windows -ComputerName $vmname -Credential $adminCredentials
-        $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName $imageReference.Publisher -Offer $imageReference.Offer -Skus $imageReference.Sku -Version $imageReference.Version
-        $vmConfig = Add-AzVMNetworkInterface -VM $vmConfig -Id $nic.Id
+    # יצירת ה-VM
+    Write-Output "Creating VM $vmname in Resource Group: $resourceGroupname - Location: $location"
+    $vmConfig = New-AzVMConfig -VMName $vmname -VMSize $vmsize
+    $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Windows -ComputerName $vmname -Credential $adminCredentials
+    $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName $imageReference.Publisher -Offer $imageReference.Offer -Skus $imageReference.Sku -Version $imageReference.Version
+    $vmConfig = Add-AzVMNetworkInterface -VM $vmConfig -Id $nic.Id
 
-        # יצירת ה-VM בפועל (בלי Boot Diagnostics)
-        New-AzVM -ResourceGroupName $resourceGroupname -Location $location -VM $vmConfig
-        Write-Output "VM $vmname created successfully."
-        
-        # הוספת המכונה ל-Host Pool
-        Write-Output "Adding VM $vmname to Host Pool $hostpoolname..."
-        Add-AzWvdSessionHost -ResourceGroupName $resourceGroupname `
-                             -HostPoolName $hostpoolname `
-                             -SessionHostName $vmname `
-                             -AllowNewSessionHost $true
-        Write-Output "Added VM $vmname to Host Pool $hostpoolname successfully."
-        
-    } catch {
-        Write-Error "Failed to create or add VM $vmname. Error: $_"
-    }
+    # יצירת Boot Diagnostics
+    Write-Output "Enabling Boot Diagnostics for VM $vmname..."
+    $bootDiagnostics = New-Object -TypeName Microsoft.Azure.Management.Compute.Models.BootDiagnostics
+    $bootDiagnostics.Enabled = $true
+    $bootDiagnostics.StorageUri = "https://roystorge.blob.core.windows.net/bootdiagnostics"
+
+    # הגדרת Boot Diagnostics ל-VM
+    $vmConfig = Set-AzVM -VM $vmConfig -BootDiagnostics $bootDiagnostics
+
+    # יצירת ה-VM בפועל
+    New-AzVM -ResourceGroupName $resourceGroupname -Location $location -VM $vmConfig
+    Write-Output "VM $vmname created successfully."
+
+    # הוספת ה-VM ל-Host Pool
+    Write-Output "Adding VM $vmname to Host Pool $hostpoolname..."
+    Import-Module Az.DesktopVirtualization
+
+    Add-AzWvdSessionHost -ResourceGroupName $resourceGroupname `
+                          -HostPoolName $hostpoolname `
+                          -SessionHostName $vmname `
+                          -AllowNewSessionHost $true
+
+    Write-Output "Added VM $vmname to Host Pool $hostpoolname successfully."
+} catch {
+    Write-Error "Failed to create or add VM $vmname. Error: $_"
 }
-
-Write-Output "Script completed: All tasks processed."
