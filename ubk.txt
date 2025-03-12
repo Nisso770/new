@@ -1,3 +1,5 @@
 https://developers.yubico.com/yubikey-manager/Releases/
 
 https://developers.yubico.com/yubikey-manager-qt/Releases/
+
+yubikey-manager-qt-1.2.6-win32.exe
