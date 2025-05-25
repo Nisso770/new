@@ -7,3 +7,4 @@ yubikey-manager-qt-1.2.6-win32.exe
 "%ProgramFiles%\Yubico\YubiKey Manager\ykman-uninstall.exe" /S
 
 GoogleCloudSDKInstaller.exe /S /allusers /noreporting
+"C:\Program Files\Google\Cloud SDK\uninstaller.exe" /S
