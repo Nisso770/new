@@ -5,3 +5,5 @@ https://developers.yubico.com/yubikey-manager-qt/Releases/
 yubikey-manager-qt-1.2.6-win32.exe
 
 "%ProgramFiles%\Yubico\YubiKey Manager\ykman-uninstall.exe" /S
+
+GoogleCloudSDKInstaller.exe /S /allusers /noreporting
