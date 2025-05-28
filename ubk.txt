@@ -1,10 +1,69 @@
-https://developers.yubico.com/yubikey-manager/Releases/
+# Install-GCloudSDK.ps1
+# This script will copy the GCloud SDK files to the target installation path.
 
-https://developers.yubico.com/yubikey-manager-qt/Releases/
+# Define the source directory (where the SDK files are located within the Intune package)
+# $PSScriptRoot refers to the directory where this PowerShell script is located.
+$SourcePath = $PSScriptRoot
 
-yubikey-manager-qt-1.2.6-win32.exe
+# Define the target installation directory on the user's machine
+$TargetPath = "C:\Program Files\Google\Cloud SDK"
 
-"%ProgramFiles%\Yubico\YubiKey Manager\ykman-uninstall.exe" /S
+# --- Logging setup (optional but highly recommended for troubleshooting) ---
+$LogFile = "$env:TEMP\Install-GCloudSDK_Log.txt"
 
-GoogleCloudSDKInstaller.exe /S /allusers /noreporting
-"C:\Program Files\Google\Cloud SDK\uninstaller.exe" /S
+Function Write-Log {
+    Param (
+        [string]$Message,
+        [string]$Level = "INFO"
+    )
+    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Add-Content -Path $LogFile -Value "$Timestamp [$Level] $Message"
+}
+
+Write-Log "Starting GCloud SDK installation script."
+Write-Log "Source Path: $SourcePath"
+Write-Log "Target Path: $TargetPath"
+
+# --- Main installation logic ---
+
+Try {
+    # Check if the target directory already exists. If so, remove it to ensure a clean installation.
+    # This is important for updates or re-installations.
+    If (Test-Path $TargetPath) {
+        Write-Log "Target path '$TargetPath' already exists. Attempting to remove it for clean installation."
+        Remove-Item -Path $TargetPath -Recurse -Force -ErrorAction Stop
+        Write-Log "Successfully removed existing target path."
+    }
+
+    # Create the target directory if it doesn't exist
+    New-Item -ItemType Directory -Path $TargetPath -Force -ErrorAction Stop
+    Write-Log "Target directory '$TargetPath' created (or already existed)."
+
+    # Copy the content of the SDK from the source to the target.
+    # This assumes the 'google-cloud-sdk' folder is directly inside $SourcePath.
+    $SDKContentSource = Join-Path -Path $SourcePath -ChildPath "google-cloud-sdk"
+    
+    If (-not (Test-Path $SDKContentSource)) {
+        Write-Log "Error: 'google-cloud-sdk' folder not found at '$SDKContentSource'. Exiting." "ERROR"
+        Exit 1 # Exit with an error code
+    }
+
+    Write-Log "Copying contents from '$SDKContentSource' to '$TargetPath'."
+    Copy-Item -Path "$SDKContentSource\*" -Destination $TargetPath -Recurse -Force -ErrorAction Stop
+    Write-Log "Successfully copied GCloud SDK files."
+
+    # Optional: If there are any post-installation steps (like running gcloud init or similar)
+    # This is usually not needed for just copying the files, but keep in mind for complex scenarios.
+    # For example, if you wanted to configure something globally:
+    # Set-Location $TargetPath
+    # .\google-cloud-sdk\bin\gcloud.cmd config set project YOUR_DEFAULT_PROJECT_ID
+    # Write-Log "Configured default project (optional)."
+
+    Write-Log "GCloud SDK installation completed successfully."
+    Exit 0 # Exit with success code
+}
+Catch {
+    Write-Log "An error occurred during installation: $($_.Exception.Message)" "ERROR"
+    Write-Log "Full error details: $($_.Exception | Out-String)" "ERROR"
+    Exit 1 # Exit with an error code
+}
