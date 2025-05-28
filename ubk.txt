@@ -67,3 +67,47 @@ Catch {
     Write-Log "Full error details: $($_.Exception | Out-String)" "ERROR"
     Exit 1 # Exit with an error code
 }
+
+
+
+
+# Uninstall-GCloudSDK.ps1
+# This script will remove the GCloud SDK from the target installation path.
+
+# Define the target installation directory on the user's machine
+$TargetPath = "C:\Program Files\Google\Cloud SDK"
+
+# --- Logging setup (optional but highly recommended for troubleshooting) ---
+$LogFile = "$env:TEMP\Uninstall-GCloudSDK_Log.txt" # Use a different log file or append to the same one
+
+Function Write-Log {
+    Param (
+        [string]$Message,
+        [string]$Level = "INFO"
+    )
+    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Add-Content -Path $LogFile -Value "$Timestamp [$Level] $Message"
+}
+
+Write-Log "Starting GCloud SDK uninstallation script."
+Write-Log "Target Path: $TargetPath"
+
+# --- Main uninstallation logic ---
+
+Try {
+    If (Test-Path $TargetPath) {
+        Write-Log "Target path '$TargetPath' exists. Attempting to remove it."
+        Remove-Item -Path $TargetPath -Recurse -Force -ErrorAction Stop
+        Write-Log "Successfully removed GCloud SDK from '$TargetPath'."
+    } Else {
+        Write-Log "GCloud SDK not found at '$TargetPath'. Nothing to uninstall."
+    }
+
+    Write-Log "GCloud SDK uninstallation completed successfully."
+    Exit 0 # Exit with success code
+}
+Catch {
+    Write-Log "An error occurred during uninstallation: $($_.Exception.Message)" "ERROR"
+    Write-Log "Full error details: $($_.Exception | Out-String)" "ERROR"
+    Exit 1 # Exit with an error code
+}
