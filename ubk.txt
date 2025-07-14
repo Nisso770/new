@@ -1,3 +1,5 @@
 powershell.exe -ExecutionPolicy Bypass -File Install-GCloudSDK.ps1
 
 powershell.exe -ExecutionPolicy Bypass -File Uninstall-GCloudSDK.ps1
+
+Helm.Helm_Microsoft.Winget.Source_8wekyb3d8bbwe
