@@ -5,3 +5,31 @@ powershell.exe -ExecutionPolicy Bypass -File Uninstall-GCloudSDK.ps1
 Helm.Helm_Microsoft.Winget.Source_8wekyb3d8bbwe
 
 {"code":"VMExtensionProvisioningError","message":"VM has reported a failure when processing extension 'Microsoft.PowerShell.DSC' (publisher 'Microsoft.Powershell' and type 'DSC'). Error message: 'The DSC Extension failed to execute: Error downloading https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_1.0.03095.810.zip after 17 attempts: Unable to connect to the remote server.\r\nMore information about the failure can be found in the logs located under 'C:\\WindowsAzure\\Logs\\Plugins\\Microsoft.Powershell.DSC\\2.83.5' on the VM.'. More information on troubleshooting is available at https://aka.ms/VMExtensionDSCWindowsTroubleshoot. "}
+
+
+
+
+$AvailableUsers = (Get-ChildItem c:\users -Directory | Where-Object {($_.Name -ne "Public") -and ($_.Name -ne "defaultuser0")}).Name 
+foreach($User in $AvailableUsers)
+{
+
+    $App = "C:\Users\$($User)\.vscode\extensions"
+
+    $State = Test-Path -Path $App
+
+    if ($State)
+    {
+        Write-Output "successful"
+        exit 0
+
+    }
+
+    else
+    {
+
+        write-Output "unsuccessful"
+        exit 1
+
+    }
+
+}
