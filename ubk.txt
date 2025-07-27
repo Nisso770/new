@@ -17,6 +17,8 @@ C:\WizForVSCode
 
 WizCloud.wiz-vscode-2.5.3.vsix
 
+HashiCorp.terraform-2.34.5@darwin-arm64.vsix
+
 
 {"code":"DeploymentFailed","target":"/subscriptions/31076e3c-fc5e-4f0b-be52-0eb744e89036/resourceGroups/AVD-9900-Monitoring-RG/providers/Microsoft.Resources/deployments/AddVMsToHostPool-c16651b8-b696-4c68-9c07-33ee398072ba-deployment","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"ResourceDeploymentFailure","target":"/subscriptions/31076e3c-fc5e-4f0b-be52-0eb744e89036/resourceGroups/AVD-9900-Monitoring-RG/providers/Microsoft.Resources/deployments/vmCreation-linkedTemplate-c16651b8-b696-4c68-9c07-33ee398072ba","message":"The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'."}]}
 
