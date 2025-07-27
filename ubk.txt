@@ -7,8 +7,8 @@ Wiz Code Extension For VSCode
 * Press` Ctrl+Shift+X` to open the Extensions panel
 * Click the three dots (⋮) in the top-right corner
 * Select "Install from VSIX..."
-* Browse to C:\WizForVSCode
-* Select the file: WizCloud.wiz-vscode-2.5.3.vsix
+* Browse to C:\terraformForVSCode
+* Select the file: HashiCorp.terraform-2.34.5@darwin-arm64.vsix
 * Click Install
 
 🔁 Restart VS Code if prompted.
